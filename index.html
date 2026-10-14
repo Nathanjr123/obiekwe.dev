@@ -7,7 +7,7 @@
 <meta property="og:title" content="Nathan Obiekwe">
 <meta property="og:description" content="RL environments and evaluations for frontier labs, with deterministic graders and a record of every task a stronger agent broke.">
 <meta property="og:url" content="https://obiekwe.dev/">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231F3FC4%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2718%27 fill=%27white%27 text-anchor=%27middle%27%3EN%3C/text%3E%3C/svg%3E">
 <title>Nathan Obiekwe</title>
 <style>img{max-width:100%}[hidden]{display:none!important}</style>
@@ -19,23 +19,24 @@
 <style>
 /* Layout concept: a calibration notebook. Left-weighted reading column, a quiet grid, and one loud element per screen —
    the score ladder (oracle 1.0 / reference 0.5 / naive 0 / agent) that every case study is measured against. */
+/* Dark-first: a measurement console. Light is offered, dark is the design. */
 :root{
-  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#141B2D; --ink-2:#46506A; --line:#D6DBE6; --line-2:#E8EBF2;
-  --accent:#1F3FC4; --accent-ink:#FFFFFF; --accent-soft:#E6EAFB;
-  --pass:#1C7C54; --warn:#B7791F; --fail:#B3261E; --fail-soft:#FBE9E7; --pass-soft:#E3F3EC;
+  --bg:#0B0F1A; --surface:#121829; --surface-2:#182036; --ink:#EEF1F8; --ink-2:#9AA4BD; --line:#26304A; --line-2:#1B2338;
+  --accent:#8CA2FF; --accent-ink:#0B0F1A; --accent-soft:#1A2347; --glow:rgba(140,162,255,.18);
+  --pass:#5BC58F; --warn:#E0B458; --fail:#F28B82; --fail-soft:#3A1F22; --pass-soft:#163326;
   --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --body:"Source Serif 4",Georgia,"Times New Roman",serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --max:1120px; --gutter:clamp(16px,4vw,48px); --radius:6px;
+  --max:1120px; --gutter:clamp(16px,4vw,48px); --radius:8px; color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0F1320; --surface:#161B2C; --ink:#EEF1F8; --ink-2:#A7AFC4; --line:#2A3148; --line-2:#1F2538;
-  --accent:#7D95FF; --accent-ink:#0F1320; --accent-soft:#1D2545;
-  --pass:#5BC58F; --warn:#E0B458; --fail:#F28B82; --fail-soft:#3A1F1F; --pass-soft:#163326; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0F1320; --surface:#161B2C; --ink:#EEF1F8; --ink-2:#A7AFC4; --line:#2A3148; --line-2:#1F2538;
-  --accent:#7D95FF; --accent-ink:#0F1320; --accent-soft:#1D2545;
-  --pass:#5BC58F; --warn:#E0B458; --fail:#F28B82; --fail-soft:#3A1F1F; --pass-soft:#163326; color-scheme:dark}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#EEF1F7; --ink:#141B2D; --ink-2:#46506A; --line:#D6DBE6; --line-2:#E8EBF2;
+  --accent:#1F3FC4; --accent-ink:#FFFFFF; --accent-soft:#E6EAFB; --glow:rgba(31,63,196,.10);
+  --pass:#1C7C54; --warn:#B7791F; --fail:#B3261E; --fail-soft:#FBE9E7; --pass-soft:#E3F3EC; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#EEF1F7; --ink:#141B2D; --ink-2:#46506A; --line:#D6DBE6; --line-2:#E8EBF2;
+  --accent:#1F3FC4; --accent-ink:#FFFFFF; --accent-soft:#E6EAFB; --glow:rgba(31,63,196,.10);
+  --pass:#1C7C54; --warn:#B7791F; --fail:#B3261E; --fail-soft:#FBE9E7; --pass-soft:#E3F3EC; color-scheme:light}
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -65,18 +66,18 @@ p{margin:0}
 .links a:hover,.links a[aria-current]{color:var(--ink);background:var(--accent-soft)}
 
 /* hero */
-.hero{padding-block:clamp(44px,8vw,96px) clamp(36px,6vw,72px);border-bottom:1px solid var(--line-2)}
+.hero{padding-block:clamp(44px,8vw,96px) clamp(36px,6vw,72px);border-bottom:1px solid var(--line-2);background:radial-gradient(900px 420px at 18% 0%,var(--glow),transparent 70%)}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.9fr);gap:clamp(24px,5vw,64px);align-items:end}
 .hero p.lede{font-size:clamp(18px,1.6vw,21px);color:var(--ink-2);margin-top:22px;max-width:58ch}
 .hero .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:26px;font-family:var(--mono);font-size:13px;color:var(--ink-2)}
 .hero .meta b{color:var(--ink);font-weight:500}
 .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
 .btn{font-family:var(--display);font-weight:600;font-size:15px;padding:11px 16px;border-radius:999px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface);cursor:pointer}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:0 10px 30px -12px var(--glow)}
 .btn:hover{border-color:var(--accent)}
 
 /* the ladder (hero visual) */
-.ladder{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px}
+.ladder{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 20px 16px;box-shadow:0 0 0 1px var(--line-2),0 24px 60px -30px var(--glow)}
 .ladder .eyebrow{margin-bottom:10px}
 .rung{display:grid;grid-template-columns:118px 1fr 52px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line-2);font-family:var(--mono);font-size:13px}
 .rung:first-of-type{border-top:0}
@@ -90,6 +91,13 @@ p{margin:0}
 .ladder .cap{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:10px;line-height:1.5}
 .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
 
+/* at a glance */
+.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.glance > div{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.glance h4{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-family:var(--mono);font-weight:500;margin-bottom:8px}
+.glance p{font-size:15.5px;color:var(--ink);line-height:1.5}
+.glance p span{color:var(--ink-2)}
+@media (max-width:820px){.glance{grid-template-columns:1fr}}
 /* numbers strip */
 .strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-top:-1px}
 .strip > div{padding:16px 18px;border-left:1px solid var(--line-2)}
@@ -107,7 +115,8 @@ section.block{padding-block:clamp(44px,7vw,88px);border-bottom:1px solid var(--l
 .cases{display:grid;gap:14px}
 details.case{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);scroll-margin-top:72px}
 details.case[open]{border-color:var(--accent)}
-details.case summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:18px 20px;align-items:start}
+details.case summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:22px 24px;align-items:start}
+details.case summary:hover{background:var(--surface-2)}
 details.case summary::-webkit-details-marker{display:none}
 .case .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
@@ -117,7 +126,7 @@ details.case summary::-webkit-details-marker{display:none}
 .case .sum{color:var(--ink-2);margin-top:8px;max-width:70ch}
 .case .open-ind{font-family:var(--display);font-weight:600;font-size:13px;color:var(--accent);white-space:nowrap;padding-top:4px}
 details.case[open] .open-ind .o,details.case:not([open]) .open-ind .c{display:none}
-.case .body{padding:0 20px 22px;border-top:1px solid var(--line-2);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:clamp(18px,3vw,36px)}
+.case .body{padding:0 24px 26px;border-top:1px solid var(--line-2);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:clamp(18px,3vw,36px)}
 .case .body > *{min-width:0}
 .case .body h4{margin:20px 0 6px}
 .case .body h4:first-child{margin-top:20px}
@@ -186,7 +195,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <div class="wrap">
     <a class="brand" href="#top">Nathan Obiekwe<span>.</span></a>
     <div class="links">
-      <a href="#work">Work</a><a href="#method">Method</a><a href="#notes">Field notes</a><a href="#systems">Systems</a><a href="#about">About</a><a href="#contact">Contact</a>
+      <a href="#work">Work</a><a href="#method">Method</a><a href="#notes">Field notes</a><a href="#systems">Systems</a><a href="#about">About</a><a href="#contact" style="background:var(--accent);color:var(--accent-ink)">Contact</a>
     </div>
   </div>
 </nav>
@@ -216,10 +225,15 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   </div>
 </header>
 
-<div class="wrap" style="margin-top:28px">
-  <div class="strip" role="list">
-    <div role="listitem"><div class="n">55</div><div class="l">submissions for frontier-model training data since Jan 2026</div></div>
-    <div role="listitem"><div class="n">76.5%</div><div class="l">first-pass acceptance across those submissions</div></div>
+<div class="wrap">
+  <div class="glance" aria-label="At a glance">
+    <div><h4>What I build</h4><p>RL environments with deterministic graders, multi-turn coding evaluations, and verification tasks over synthetic data. <span>MuJoCo, Python, rubric design.</span></p></div>
+    <div><h4>How I measure</h4><p>Oracle at exactly 1.0, a fair reference at 0.5, naive policies at 0, then an attack by the strongest available agent before any review. <span>Difficulty is a number, not an opinion.</span></p></div>
+    <div><h4>Where it has been used</h4><p>Frontier-model training data via Alignerr (2026), a frontier model's evaluation at Turing (2025), and a production operations platform run by a non-technical client. <span>Remote, UTC+2.</span></p></div>
+  </div>
+  <div class="strip" role="list" style="margin-top:14px">
+    <div role="listitem"><div class="n">7</div><div class="l">case studies below, each with its measured numbers</div></div>
+    <div role="listitem"><div class="n">0.265</div><div class="l">frontier-agent score on the one task structure that held</div></div>
     <div role="listitem"><div class="n">1.000</div><div class="l">required oracle score, verified by harness, on every RL task</div></div>
     <div role="listitem"><div class="n">20–50%</div><div class="l">target model pass band on the Gemini evaluation tasks</div></div>
   </div>
@@ -392,7 +406,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
           <div>
             <h3>Multi-turn coding evaluations for frontier-model training</h3>
             <p class="sum">Prompts engineered so that capable models produce architecturally different solutions, then ranked with written rationales on seven fixed engineering axes. Preference pairs used directly in training.</p>
-            <div class="tags"><span class="tag ship">ongoing since Jan 2026</span><span class="tag">RLHF</span><span class="tag">rubrics</span><span class="tag">76.5% acceptance</span></div>
+            <div class="tags"><span class="tag ship">ongoing since Jan 2026</span><span class="tag">RLHF</span><span class="tag">rubrics</span><span class="tag">preference data</span></div>
           </div>
           <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
         </summary>
@@ -402,13 +416,13 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
             <p>A useful comparison needs two answers that differ in a way a reviewer can defend, not two that differ in style. That means designing the prompt around a real fork: a concurrency choice, a data-model choice, an error-handling boundary. The follow-up turns then test whether the model holds its own design under pressure.</p>
             <h4>The grading</h4>
             <p>Seven axes, fixed before any output is read: correctness, robustness, design, readability, testing, performance, and communication. Each ranking ships with a rationale that cites lines, not impressions. The rubric is locked first so the rationale cannot drift toward whichever answer I liked.</p>
-            <h4>Numbers</h4>
-            <p>55 submissions, 76.5% accepted first pass by the client's review, with rejections traced to cause and fed back into how the next prompt was built.</p>
+            <h4>Feedback loop</h4>
+            <p>Every rejection from the client's review is traced to its cause and fed back into how the next prompt is built, so the acceptance rate is a lagging indicator of the rubric, not of effort.</p>
           </div>
           <aside class="aside">
             <div class="kv">
-              <div><span>submissions</span><span>55</span></div>
-              <div><span>first-pass acceptance</span><span class="pass">76.5%</span></div>
+              <div><span>active since</span><span>Jan 2026</span></div>
+              <div><span>review</span><span>client, per submission</span></div>
               <div><span>grading axes</span><span>7, locked first</span></div>
               <div><span>turns per task</span><span>multi</span></div>
             </div>
