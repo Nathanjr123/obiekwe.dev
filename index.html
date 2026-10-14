@@ -230,10 +230,10 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <div class="glance" aria-label="At a glance">
     <div><h4>What I build</h4><p>RL environments with deterministic graders, multi-turn coding evaluations, and verification tasks over synthetic data. <span>MuJoCo, Python, rubric design.</span></p></div>
     <div><h4>How I measure</h4><p>Oracle at exactly 1.0, a fair reference at 0.5, naive policies at 0, then an attack by the strongest available agent before any review. <span>Difficulty is a number, not an opinion.</span></p></div>
-    <div><h4>Where it has been used</h4><p>Frontier-model training data via Alignerr (2026), a frontier model's evaluation at Turing (2025), and a production operations platform run by a non-technical client. <span>Remote, UTC+2.</span></p></div>
+    <div><h4>Where it has been used</h4><p>Frontier-model training data via Alignerr (2026), a frontier model's evaluation at Turing (2025), and a production operations platform run by a non-technical client, and my own startup, AI Securewatch. <span>Remote, UTC+2.</span></p></div>
   </div>
   <div class="strip" role="list" style="margin-top:14px">
-    <div role="listitem"><div class="n">7</div><div class="l">case studies below, each with its measured numbers</div></div>
+    <div role="listitem"><div class="n">8</div><div class="l">case studies below, each with its measured numbers</div></div>
     <div role="listitem"><div class="n">0.265</div><div class="l">frontier-agent score on the one task structure that held</div></div>
     <div role="listitem"><div class="n">1.000</div><div class="l">required oracle score, verified by harness, on every RL task</div></div>
     <div role="listitem"><div class="n">20–50%</div><div class="l">target model pass band on the Gemini evaluation tasks</div></div>
@@ -459,6 +459,48 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
         </div>
       </details>
 
+      <details class="case" id="case-securewatch">
+        <summary>
+          <div>
+            <h3>AI Securewatch: co-founder, lead backend engineer</h3>
+            <p class="sum">A startup I co-founded in 2024. First a payment-intelligence platform that finds insider-linked vendor fraud through entity resolution and graph analysis; now PayReality, decision intelligence that finds the unresolved questions behind an AI workflow's repeated escalations and turns them into tested rules.</p>
+            <div class="tags"><span class="tag ship">2024 – now</span><span class="tag">entity resolution</span><span class="tag">graph analysis</span><span class="tag">decision logic</span><span class="tag">AWS · Python</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The problem we started with</h4>
+            <p>Enterprises pay thousands of vendors and formally manage a fraction of them. The gap between who an organisation thinks it pays (the vendor record) and who actually receives the money (vendor reality) is where insider-linked fraud hides: an employee who is also a vendor's director, shell companies sharing an address, invoices split to stay under an approval threshold. No procurement or third-party-risk system looks across those records at once.</p>
+            <h4>The platform (2024 – 2026)</h4>
+            <ul>
+              <li><b>Payment-based vendor discovery.</b> Start from the payment ledger, not the vendor master, so unmanaged and shadow vendors appear alongside the approved ones.</li>
+              <li><b>Entity resolution.</b> Probabilistic record linkage across employees, vendors, company registrations and bank details (Splink on DuckDB): blocking on national ID, company registration, surname plus postal code, phone and email; Jaro-Winkler on names, Levenshtein on addresses, exact on identifiers. Built for South African data, including Luhn-validated ID numbers with date of birth and gender extraction, and company-registry formats.</li>
+              <li><b>Relationship graph.</b> Resolved entities become a graph (NetworkX): shared addresses, shared directors, ownership links, employee-to-vendor connections, payment flows. Risk propagates across hops with decay, so a clean-looking vendor two steps from a flagged director still surfaces.</li>
+              <li><b>Seven detectors with explicit evidence requirements.</b> Shell companies, self-supply loops, split purchasing, circular payments, ghost vendors, shared identifiers, dormancy spikes. Each has a defined signal set and risk weight, so an analyst can see why a score is what it is.</li>
+              <li><b>Measured against ground truth.</b> A synthetic data generator embeds known fraud patterns with hidden labels, so detector recall and false-positive rates are measured before any client data is touched. The same habit as my evaluation work: a detector that is never tested against a planted answer is an opinion.</li>
+              <li><b>Delivery.</b> Polars and Parquet for processing, a FastAPI service, an interactive dashboard, an ML anomaly layer for transaction behaviour, tamper-evident audit logging with on-chain verification, and automated response hooks; Python and Node.js on AWS. Modular monolith by choice: one engineer, a ten-week build window, clean module boundaries instead of infrastructure.</li>
+            </ul>
+            <h4>Where it is going: PayReality</h4>
+            <p>Working with early-stage customers showed a more general problem than fraud. AI workflows handle the routine cases and stall on the exceptions, and the exceptions stall for the same reason again and again: a rule that was never made explicit. Two handlers get the same damaged-item claim; one approves, one escalates, because the policy never said whether a photo was required.</p>
+            <p>PayReality looks across many cases at once, finds the recurring uncertainty (missing information, unclear rules, judgement calls), prioritises the few questions whose answers would resolve most of it, has authorised experts answer them, encodes the answers as explicit decision logic, and replays historical cases against that logic before anyone trusts it. It sits under the models, rules engines and workflow tools a company already runs rather than replacing them. It is an evaluation harness for human and AI decisions, and it is currently a hypothesis we are testing with design partners, not a product with published customer results.</p>
+            <h4>My role</h4>
+            <p>Co-founder and the engineer who designed and built the backend end to end, from data model and resolution pipeline to API and deployment. I also work with my co-founders on roadmap, investor demonstrations and technical hiring.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>founded</span><span>2024</span></div>
+              <div><span>fraud patterns detected</span><span>7</span></div>
+              <div><span>resolution blocking keys</span><span>5</span></div>
+              <div><span>risk model</span><span>multi-hop, decayed</span></div>
+              <div><span>ground truth</span><span>planted, hidden labels</span></div>
+              <div><span>stack</span><span>Python · DuckDB · AWS</span></div>
+            </div>
+            <div class="verdict">Find the gap between the record and the reality, then make the rule explicit and test it against real cases.</div>
+          </aside>
+        </div>
+      </details>
+
       <details class="case" id="case-agentic">
         <summary>
           <div>
@@ -554,7 +596,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
       <p>Backend and product work that pays for the research habit. Five years of Python on AWS and in distributed architectures.</p>
     </div>
     <div class="sys">
-      <article><h3>AI SecureWatch, CyberSafe</h3><p>Lead backend engineer on an AI security platform: ML anomaly detection, tamper-evident logging with blockchain verification, and automated response. Python and Node.js on AWS. Worked with the founders on roadmap and technical hiring.</p><div class="row"><span class="tag">Python</span><span class="tag">Node.js</span><span class="tag">AWS</span><span class="tag">ML</span></div></article>
+      <article><h3>AI Securewatch</h3><p>The startup I co-founded. Payment-graph fraud detection, now PayReality decision intelligence. Full account in the case study above.</p><div class="row"><span class="tag">co-founder</span><span class="tag">Python</span><span class="tag">AWS</span></div><p class="lnk"><a href="#case-securewatch">Read the case study</a></p></article>
       <article><h3>repo-testify</h3><p>Technical due diligence that executes a repository's own README claims instead of reading them: extracts claims, runs them in a sandbox, and produces a per-claim verdict ledger with explicit abstention. Built for a 75-hour agentic-workflows hackathon with an honest baseline and ablations.</p><div class="row"><span class="tag">Python</span><span class="tag">agents</span><span class="tag">evaluation</span></div><p class="lnk"><a href="https://github.com/Nathanjr123/repo-testify">github.com/Nathanjr123/repo-testify</a></p></article>
       <article><h3>McIntyre MedSys</h3><p>Clinical communication and patient-safety platform for nursing teams: structured handover, escalation ladder, dual-sign telephone orders with a tamper-evident audit trail. Zero-dependency web app, shipped as a clickable MVP.</p><div class="row"><span class="tag">JavaScript</span><span class="tag">health tech</span><span class="tag">POPIA-aware</span></div><p class="lnk"><a href="https://nathanjr123.github.io/mcintyre-medsys/">Live MVP</a> · <a href="https://github.com/Nathanjr123/mcintyre-medsys">Source</a></p></article>
       <article><h3>RisCura asset-management platform</h3><p>Backend services and SQL Server query optimisation for an internal platform used daily by the investment team. Microservices and R Shiny front ends in production.</p><div class="row"><span class="tag">SQL Server</span><span class="tag">microservices</span><span class="tag">R Shiny</span></div></article>
@@ -573,7 +615,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
       <div class="timeline">
         <div><span class="when">Jan 2026 – now</span><span>RL environments and coding evaluations for frontier-model training, via Alignerr</span></div>
         <div><span class="when">Sep – Nov 2025</span><span>LLM evaluation and verification tasks, Turing</span></div>
-        <div><span class="when">Oct 2024 – now</span><span>Backend and security consultant, CyberSafe (AI SecureWatch)</span></div>
+        <div><span class="when">Oct 2024 – now</span><span>Co-founder and lead backend engineer, AI Securewatch (PayReality)</span></div>
         <div><span class="when">2024</span><span>Solidity developer, Linum Labs</span></div>
         <div><span class="when">2022</span><span>Software developer, RisCura</span></div>
         <div><span class="when">2019 – now</span><span>Independent software consultant</span></div>
