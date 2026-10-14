@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Nathan Obiekwe: reinforcement-learning environments, evaluation tasks and production systems for frontier labs. Case studies with measured results.">
+<meta property="og:title" content="Nathan Obiekwe">
+<meta property="og:description" content="RL environments and evaluations for frontier labs, with deterministic graders and a record of every task a stronger agent broke.">
+<meta property="og:url" content="https://obiekwe.dev/">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231F3FC4%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Arial%27 font-weight=%27700%27 font-size=%2718%27 fill=%27white%27 text-anchor=%27middle%27%3EN%3C/text%3E%3C/svg%3E">
+<title>Nathan Obiekwe</title>
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a calibration notebook. Left-weighted reading column, a quiet grid, and one loud element per screen —
+   the score ladder (oracle 1.0 / reference 0.5 / naive 0 / agent) that every case study is measured against. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#141B2D; --ink-2:#46506A; --line:#D6DBE6; --line-2:#E8EBF2;
+  --accent:#1F3FC4; --accent-ink:#FFFFFF; --accent-soft:#E6EAFB;
+  --pass:#1C7C54; --warn:#B7791F; --fail:#B3261E; --fail-soft:#FBE9E7; --pass-soft:#E3F3EC;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --max:1120px; --gutter:clamp(16px,4vw,48px); --radius:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1320; --surface:#161B2C; --ink:#EEF1F8; --ink-2:#A7AFC4; --line:#2A3148; --line-2:#1F2538;
+  --accent:#7D95FF; --accent-ink:#0F1320; --accent-soft:#1D2545;
+  --pass:#5BC58F; --warn:#E0B458; --fail:#F28B82; --fail-soft:#3A1F1F; --pass-soft:#163326; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1320; --surface:#161B2C; --ink:#EEF1F8; --ink-2:#A7AFC4; --line:#2A3148; --line-2:#1F2538;
+  --accent:#7D95FF; --accent-ink:#0F1320; --accent-soft:#1D2545;
+  --pass:#5BC58F; --warn:#E0B458; --fail:#F28B82; --fail-soft:#3A1F1F; --pass-soft:#163326; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-0.01em}
+h1{font-size:clamp(38px,6.4vw,76px);font-weight:800}
+h2{font-size:clamp(26px,3.4vw,40px);font-weight:600}
+h3{font-size:clamp(20px,2.2vw,26px);font-weight:600}
+h4{font-size:17px;font-weight:600;font-family:var(--display)}
+p{margin:0}
+.mono{font-family:var(--mono);font-size:.84em;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.wrap{max-width:var(--max);margin:0 auto;padding-inline:var(--gutter)}
+.prose{max-width:66ch}
+.prose p + p{margin-top:1em}
+.sr{position:absolute;left:-9999px}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-2)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px}
+.brand{font-family:var(--display);font-weight:800;font-size:18px;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--accent)}
+.links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.links::-webkit-scrollbar{display:none}
+.links a{font-family:var(--display);font-weight:600;font-size:14px;color:var(--ink-2);text-decoration:none;padding:8px 10px;border-radius:999px;white-space:nowrap}
+.links a:hover,.links a[aria-current]{color:var(--ink);background:var(--accent-soft)}
+
+/* hero */
+.hero{padding-block:clamp(44px,8vw,96px) clamp(36px,6vw,72px);border-bottom:1px solid var(--line-2)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.9fr);gap:clamp(24px,5vw,64px);align-items:end}
+.hero p.lede{font-size:clamp(18px,1.6vw,21px);color:var(--ink-2);margin-top:22px;max-width:58ch}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:26px;font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.hero .meta b{color:var(--ink);font-weight:500}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.btn{font-family:var(--display);font-weight:600;font-size:15px;padding:11px 16px;border-radius:999px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--surface);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:hover{border-color:var(--accent)}
+
+/* the ladder (hero visual) */
+.ladder{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 14px}
+.ladder .eyebrow{margin-bottom:10px}
+.rung{display:grid;grid-template-columns:118px 1fr 52px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line-2);font-family:var(--mono);font-size:13px}
+.rung:first-of-type{border-top:0}
+.bar{height:10px;border-radius:2px;background:var(--line-2);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:2px}
+.rung.ref .bar i{background:var(--warn)}
+.rung.naive .bar i{background:var(--ink-2);opacity:.5}
+.rung.agent .bar i{background:var(--fail)}
+.rung.hold .bar i{background:var(--pass)}
+.rung .v{text-align:right;font-variant-numeric:tabular-nums}
+.ladder .cap{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:10px;line-height:1.5}
+.tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+
+/* numbers strip */
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-top:-1px}
+.strip > div{padding:16px 18px;border-left:1px solid var(--line-2)}
+.strip > div:first-child{border-left:0}
+.strip .n{font-family:var(--display);font-weight:800;font-size:clamp(26px,3vw,36px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.strip .l{font-size:14px;color:var(--ink-2);margin-top:2px}
+
+/* sections */
+section.block{padding-block:clamp(44px,7vw,88px);border-bottom:1px solid var(--line-2)}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:clamp(16px,4vw,48px);margin-bottom:clamp(24px,4vw,44px)}
+.sec-head p{color:var(--ink-2);max-width:62ch}
+@media (max-width:820px){.sec-head{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,minmax(0,1fr))}.strip > div:nth-child(3){border-left:0}.strip > div:nth-child(n+3){border-top:1px solid var(--line-2)}}
+
+/* case list */
+.cases{display:grid;gap:14px}
+details.case{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);scroll-margin-top:72px}
+details.case[open]{border-color:var(--accent)}
+details.case summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:18px 20px;align-items:start}
+details.case summary::-webkit-details-marker{display:none}
+.case .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.tag.hold{border-color:var(--pass);color:var(--pass);background:var(--pass-soft)}
+.tag.crack{border-color:var(--fail);color:var(--fail);background:var(--fail-soft)}
+.tag.ship{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.case .sum{color:var(--ink-2);margin-top:8px;max-width:70ch}
+.case .open-ind{font-family:var(--display);font-weight:600;font-size:13px;color:var(--accent);white-space:nowrap;padding-top:4px}
+details.case[open] .open-ind .o,details.case:not([open]) .open-ind .c{display:none}
+.case .body{padding:0 20px 22px;border-top:1px solid var(--line-2);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:clamp(18px,3vw,36px)}
+.case .body > *{min-width:0}
+.case .body h4{margin:20px 0 6px}
+.case .body h4:first-child{margin-top:20px}
+.case .body p{max-width:66ch}
+.case .body p + p{margin-top:.7em}
+.case ul{margin:6px 0 0;padding-left:1.1em}
+.case li + li{margin-top:5px}
+.aside{padding-top:20px}
+.kv{font-family:var(--mono);font-size:13px;border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden}
+.kv div{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;border-top:1px solid var(--line-2)}
+.kv div:first-child{border-top:0}
+.kv span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.kv .pass{color:var(--pass)} .kv .fail{color:var(--fail)} .kv .warn{color:var(--warn)}
+.mini{margin-top:14px}
+.mini .rung{grid-template-columns:96px 1fr 44px;font-size:12px;padding:5px 0}
+.verdict{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 var(--radius) var(--radius) 0;font-size:15px}
+.verdict.crack{border-color:var(--fail);background:var(--fail-soft)}
+.verdict.hold{border-color:var(--pass);background:var(--pass-soft)}
+@media (max-width:760px){.case .body{grid-template-columns:1fr}.aside{padding-top:0}}
+
+/* method */
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.steps > div{background:var(--surface);padding:18px 16px}
+.steps h4{margin-bottom:6px}
+.steps p{font-size:14.5px;color:var(--ink-2)}
+.steps .k{font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:10px}
+@media (max-width:980px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* notes */
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;display:flex;flex-direction:column;gap:8px}
+.note h4{font-size:18px}
+.note p{font-size:15px;color:var(--ink-2)}
+.note .ev{font-family:var(--mono);font-size:12px;color:var(--ink);margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+@media (max-width:900px){.notes{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.notes{grid-template-columns:1fr}}
+
+/* systems */
+.sys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sys article{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.sys article p{color:var(--ink-2);font-size:15.5px;margin-top:8px}
+.sys .row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sys .lnk{margin-top:12px;font-family:var(--display);font-weight:600;font-size:14px}
+@media (max-width:760px){.sys{grid-template-columns:1fr}}
+
+/* about + contact */
+.about{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);gap:clamp(20px,4vw,56px)}
+.contact{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.contact .row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line-2);font-size:15px}
+.contact .row:first-of-type{border-top:0}
+.contact .row .lab{font-family:var(--mono);font-size:12px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase}
+.contact .row .val{font-family:var(--mono);font-size:14px;word-break:break-all;user-select:all}
+.copy{font-family:var(--display);font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.copy:hover{border-color:var(--accent)}
+.timeline{margin-top:22px;border-top:1px solid var(--line-2)}
+.timeline div{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:15px}
+.timeline .when{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);padding-top:3px}
+@media (max-width:760px){.about{grid-template-columns:1fr}.timeline div{grid-template-columns:1fr}}
+footer{padding-block:28px 40px;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+@media (prefers-reduced-motion:no-preference){details.case .body{animation:fade .25s ease}@keyframes fade{from{opacity:.4;transform:translateY(-4px)}to{opacity:1;transform:none}}}
+</style>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top">Nathan Obiekwe<span>.</span></a>
+    <div class="links">
+      <a href="#work">Work</a><a href="#method">Method</a><a href="#notes">Field notes</a><a href="#systems">Systems</a><a href="#about">About</a><a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Evaluation engineer · RL environments · verifiers</p>
+      <h1 style="margin-top:14px">I build the tasks that tell you whether a model actually got better.</h1>
+      <p class="lede">Reinforcement-learning environments and coding evaluations for frontier labs, with deterministic graders, calibrated difficulty, and a written record of every task a stronger agent broke and why.</p>
+      <div class="meta">
+        <span><b>Johannesburg</b> · UTC+2</span><span>Overlaps US East and EU hours</span><span>Contractor since 2019</span>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="#work">Read the case studies</a>
+        <a class="btn" href="#contact">Get in touch</a>
+      </div>
+    </div>
+    <figure class="ladder" aria-label="The score ladder every task is calibrated against">
+      <p class="eyebrow">How a task is calibrated</p>
+      <div class="rung"><span>oracle</span><div class="bar"><i style="width:100%"></i></div><span class="v">1.000</span></div>
+      <div class="rung ref"><span>reference</span><div class="bar"><i style="width:50%"></i></div><span class="v">0.500</span></div>
+      <div class="rung agent"><span>frontier agent</span><div class="bar"><i style="width:26.5%"></i><span class="tick" style="left:50%"></span></div><span class="v">0.265</span></div>
+      <div class="rung naive"><span>naive policies</span><div class="bar"><i style="width:1%"></i></div><span class="v">0.000</span></div>
+      <figcaption class="cap">The oracle must score exactly 1.0 under the grader the agents face. A fair same-information reference sits at 0.5. The task ships only if the strongest available agent stays under the ceiling. Numbers shown are from a task that held.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<div class="wrap" style="margin-top:28px">
+  <div class="strip" role="list">
+    <div role="listitem"><div class="n">55</div><div class="l">submissions for frontier-model training data since Jan 2026</div></div>
+    <div role="listitem"><div class="n">76.5%</div><div class="l">first-pass acceptance across those submissions</div></div>
+    <div role="listitem"><div class="n">1.000</div><div class="l">required oracle score, verified by harness, on every RL task</div></div>
+    <div role="listitem"><div class="n">20–50%</div><div class="l">target model pass band on the Gemini evaluation tasks</div></div>
+  </div>
+</div>
+
+<section class="block" id="work">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Work</p><h2 style="margin-top:8px">Case studies</h2></div>
+      <p>Each entry opens into the full account: what the task asked, how the oracle and reference were anchored, how it was attacked, what the numbers were, and what changed as a result. Tasks for lab clients are described at the level of mechanism and measurement; internals stay with the client.</p>
+    </div>
+
+    <div class="cases">
+
+      <details class="case" id="case-chimney">
+        <summary>
+          <div>
+            <h3>Wall-bracing chimney climber</h3>
+            <p class="sum">A planar robot that climbs a chimney by pressing two pads against opposite walls and inch-worming upward. Friction is the only support; release both pads and it falls.</p>
+            <div class="tags"><span class="tag ship">shipped</span><span class="tag">MuJoCo</span><span class="tag">contact · friction</span><span class="tag">hidden parameters</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The task</h4>
+            <p>Four continuous actions: press force and lift for each pad. Physics at 2 kHz, control at 50 Hz, 22 seconds per episode. The difficulty axis is climb completeness: execute a coordinated multi-phase gait to a tall target without ever letting both pads slip at once.</p>
+            <h4>Anchoring</h4>
+            <p>The oracle is a hand-written inchworm gait that reaches the target and scores 1.0 after calibration. The reference is the same gait told to secure only the lower half, then hold; it lands at 0.500 and is rock-stable across seeds. Naive policies (push everything, greedy timer, random, lift-only) all land at 0.000, which is the honesty gate: a task where a trivial policy scores anything is mis-anchored.</p>
+            <h4>What makes it hold</h4>
+            <p>Friction coefficient, body mass and gravity are drawn from hidden ranges per episode. A policy cannot pre-compute a press schedule; it has to sense slip and respond. Twelve hidden grading scenarios, bit-identical determinism, about fourteen seconds per full battery.</p>
+            <h4>What I took from it</h4>
+            <p>Calibration is piecewise-linear from measured raw scores (floor, reference, oracle), never from a guess. Build the reference from the oracle's own code with one knob turned down, so the 0.5 anchor is a legal policy under the same information, not a hand-tuned number.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>oracle (calibrated)</span><span class="pass">1.000</span></div>
+              <div><span>reference</span><span class="warn">0.500</span></div>
+              <div><span>naive floor</span><span>0.000</span></div>
+              <div><span>hidden scenarios</span><span>12</span></div>
+              <div><span>control rate</span><span>50 Hz</span></div>
+              <div><span>determinism</span><span class="pass">bit-identical</span></div>
+            </div>
+            <div class="verdict hold">Passed ground truth, rubric review, and agent attack. Shipped.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-slung">
+        <summary>
+          <div>
+            <h3>Quadrotor with a slung load through a ring gauntlet</h3>
+            <p class="sum">A 3-D quadrotor carries a payload on a flexible multi-link cable and must thread it through narrow rings while keeping the swing quiet. Everything cleared until the strongest agent solved it outright.</p>
+            <div class="tags"><span class="tag crack">cracked · retired</span><span class="tag">MuJoCo</span><span class="tag">flexible cable</span><span class="tag">post-mortem</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>What happened</h4>
+            <p>Design review, adversarial review, runtime scorer and ground truth all passed. At the agent-attack stage a frontier coding agent scored 0.917 against a 0.5 ceiling. Not an exploit: it threaded 91% of rings with a mean miss of 2.5 cm.</p>
+            <h4>What the agent wrote, unprompted</h4>
+            <p>A 313-line differential-flatness cascade: a quintic payload trajectory in the flat output, zero-vibration input shaping tuned to one compromise frequency, a geometric attitude loop, a payload-plus-drone cascaded PD, and a per-segment linear regression that learned the systematic crossing bias and pre-compensated it. It tuned its own parameters with an offline coordinate search. It even set the cable length wrong and still scored 0.917.</p>
+            <h4>Why it died</h4>
+            <ul>
+              <li>Nothing hidden was load-bearing. The plant file was public and the swing fully observable, so the agent could replicate the oracle's own workflow.</li>
+              <li>The anisotropic cable stiffness did not force a multi-mode controller; a single shaper spanned both regimes. The oracle itself proved that by scoring 1.0 with a scalar shaper.</li>
+              <li>I had dropped the hidden-time gusts because they broke the 0.5 reference. That removed the one layer that punishes a clean pre-planned trajectory.</li>
+            </ul>
+            <h4>The salvage, measured and declined</h4>
+            <p>I re-used the agent's own captured policy as the attacker and escalated gusts. At every level that pushed the agent under 0.4, the blind reference was already near 0.18. Reference and agent share information, so the disturbance hurts the weaker controller more. No level existed where oracle 1.0, reference 0.5 and agent under 0.4 coexist. The family was closed rather than patched.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>ceiling</span><span>0.500</span></div>
+              <div><span>agent score</span><span class="fail">0.917</span></div>
+              <div><span>rings threaded</span><span>91.3%</span></div>
+              <div><span>mean miss</span><span>2.5 cm</span></div>
+              <div><span>gust escalation, agent / ref</span><span>0.34 / 0.18</span></div>
+            </div>
+            <div class="mini">
+              <div class="rung"><span>oracle</span><div class="bar"><i style="width:100%"></i></div><span class="v">1.00</span></div>
+              <div class="rung agent"><span>agent</span><div class="bar"><i style="width:91.7%"></i><span class="tick" style="left:50%"></span></div><span class="v">0.92</span></div>
+              <div class="rung ref"><span>reference</span><div class="bar"><i style="width:50%"></i></div><span class="v">0.50</span></div>
+            </div>
+            <div class="verdict crack">Execution hardness on a fully observed plant is a perishable moat. Retired with a written post-mortem.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-stick">
+        <summary>
+          <div>
+            <h3>Quadrotor balancing a free stick through hoops</h3>
+            <p class="sum">An underactuated quadrotor keeps a 0.9 m stick upright on a two-axis hinge while threading the stick's tip through nine hoops under hidden gusts. The agent's controller was better than mine.</p>
+            <div class="tags"><span class="tag crack">beaten by the agent</span><span class="tag">MuJoCo</span><span class="tag">underactuated</span><span class="tag">ceiling arithmetic</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>What happened</h4>
+            <p>All nine quality stages passed. The agent then scored 1.000. Running its policy through my own scorer on the 40 grading episodes: raw 0.769 against my oracle's 0.615. It threaded 7.97 hoops of 9 to my 7.22, with a worst-case miss of 9.6 cm to my 24 cm. It also arrived at the lean-reconstruction insight the task was built around without being told.</p>
+            <h4>The arithmetic this exposed</h4>
+            <p>With a linear calibration from reference to oracle, an agent clears the ceiling unless the reference is at least 1.25 times weaker than the agent in raw score. If your oracle is only 4% better than what a strong agent writes in an afternoon, no scorer geometry can save the task. On an actively balanced inverted system, feedback erases trajectory history, so planning was worth nothing and the whole difficulty rested on controller quality.</p>
+            <h4>What changed in how I work</h4>
+            <ul>
+              <li>Attack the task with the strongest agent available before any other review, and keep the agent's policy as a permanent regression test.</li>
+              <li>Measure the raw gap between oracle and best-known attack, and treat anything under about 1.5 times as not a task yet.</li>
+              <li>Seven follow-up levers were tested on this plant; all negative, each recorded with numbers so nobody rebuilds it.</li>
+            </ul>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>oracle raw</span><span>0.615</span></div>
+              <div><span>agent raw</span><span class="fail">0.769</span></div>
+              <div><span>hoops threaded, oracle / agent</span><span>7.22 / 7.97</span></div>
+              <div><span>worst miss, oracle / agent</span><span>24.4 / 9.6 cm</span></div>
+              <div><span>levers tested after</span><span>7, all negative</span></div>
+            </div>
+            <div class="verdict crack">A task's difficulty is the gap between the oracle and the best attacker, not the sophistication of the oracle.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-ballbeam">
+        <summary>
+          <div>
+            <h3>What actually holds: a contact-coupled balance task under delay</h3>
+            <p class="sum">To find out what survives a frontier agent, I probed a known-passing task with a real agent run and then built three look-alikes to isolate the mechanism. The original held at 0.265; all three copies broke.</p>
+            <div class="tags"><span class="tag hold">held · 0.265</span><span class="tag">measurement</span><span class="tag">partial observability</span><span class="tag">delay</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The experiment</h4>
+            <p>A heavy ball on a beam between two rigid decks joined by a stiff, well-damped flexure, with delayed, noisy, partially observed sensing and a weakest-case cap over the grading families. I built a leak-clean public bundle, let a frontier agent write its policy from that alone, and scored it on the grader-private cases.</p>
+            <h4>The result</h4>
+            <p>Headline 0.265, a miss. The agent's controller was strong: calibrated 0.702 before the cap, acing nominal tracking (0.886), plant transfer (0.897) and sensor degradation (0.864). What it could not do was recover the ball from the rail limits through the underactuation chain under delay, and the weakest-row cap made that one family decisive.</p>
+            <h4>The three proxies, and why they all broke</h4>
+            <ul>
+              <li>A clean re-implementation of the same structure: cracked at 1.0. The public surface leaked the mechanism.</li>
+              <li>A regime-gap variant that hid which regime was active: 0.645. The agent hedged optimally across regimes.</li>
+              <li>A task designed to need a messy integrated stack (three-mass chain, two actuator faults, 250 ms delay, impulse kicks): 0.711. The agent wrote a 15-state extended Kalman filter with an impulse detector that rewinds and replays buffered measurements, unprompted.</li>
+            </ul>
+            <h4>The lesson, stated plainly</h4>
+            <p>Implementation complexity is not difficulty. The only lever that held under measurement is information the policy cannot recover: partial observability and delay, applied to a recovery that is just barely achievable from observations alone. The 2026 literature agrees: delayed observation carries a provable optimality gap, and there is a computable lower bound on causal control cost that lets a reference be placed at the true optimum instead of tuned blind.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>original task, agent headline</span><span class="pass">0.265</span></div>
+              <div><span>agent before weakest-row cap</span><span>0.702</span></div>
+              <div><span>proxy 1 (same structure)</span><span class="fail">1.000</span></div>
+              <div><span>proxy 2 (regime gap)</span><span class="fail">0.645</span></div>
+              <div><span>proxy 3 (messy stack)</span><span class="fail">0.711</span></div>
+            </div>
+            <div class="mini">
+              <div class="rung hold"><span>original</span><div class="bar"><i style="width:26.5%"></i><span class="tick" style="left:50%"></span></div><span class="v">0.27</span></div>
+              <div class="rung agent"><span>proxy 2</span><div class="bar"><i style="width:64.5%"></i><span class="tick" style="left:50%"></span></div><span class="v">0.65</span></div>
+              <div class="rung agent"><span>proxy 3</span><div class="bar"><i style="width:71.1%"></i><span class="tick" style="left:50%"></span></div><span class="v">0.71</span></div>
+            </div>
+            <div class="verdict hold">The measured recipe: unrecoverable information plus a weakest-case cap, calibrated at a provable optimum.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-coding">
+        <summary>
+          <div>
+            <h3>Multi-turn coding evaluations for frontier-model training</h3>
+            <p class="sum">Prompts engineered so that capable models produce architecturally different solutions, then ranked with written rationales on seven fixed engineering axes. Preference pairs used directly in training.</p>
+            <div class="tags"><span class="tag ship">ongoing since Jan 2026</span><span class="tag">RLHF</span><span class="tag">rubrics</span><span class="tag">76.5% acceptance</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The craft</h4>
+            <p>A useful comparison needs two answers that differ in a way a reviewer can defend, not two that differ in style. That means designing the prompt around a real fork: a concurrency choice, a data-model choice, an error-handling boundary. The follow-up turns then test whether the model holds its own design under pressure.</p>
+            <h4>The grading</h4>
+            <p>Seven axes, fixed before any output is read: correctness, robustness, design, readability, testing, performance, and communication. Each ranking ships with a rationale that cites lines, not impressions. The rubric is locked first so the rationale cannot drift toward whichever answer I liked.</p>
+            <h4>Numbers</h4>
+            <p>55 submissions, 76.5% accepted first pass by the client's review, with rejections traced to cause and fed back into how the next prompt was built.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>submissions</span><span>55</span></div>
+              <div><span>first-pass acceptance</span><span class="pass">76.5%</span></div>
+              <div><span>grading axes</span><span>7, locked first</span></div>
+              <div><span>turns per task</span><span>multi</span></div>
+            </div>
+            <div class="verdict">Rubric before output. Rationale that cites evidence. Rejections classified by root cause.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-gemini">
+        <summary>
+          <div>
+            <h3>Verification tasks for a frontier model's evaluation (Turing, 2025)</h3>
+            <p class="sum">Python evaluation and verification tasks over synthetic healthcare, retail, logistics and finance data with controlled messiness, calibrated to a 20 to 50% model pass band and scored automatically.</p>
+            <div class="tags"><span class="tag ship">Sep–Nov 2025</span><span class="tag">synthetic data</span><span class="tag">automatic scoring</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>What the work was</h4>
+            <p>Each task combined a generated dataset with deliberate defects (duplicates, unit drift, missing keys, contradictory records) and a multi-step question whose answer could be checked programmatically. The checker verified reasoning steps and constraint satisfaction, not just a final number.</p>
+            <h4>Calibration</h4>
+            <p>Difficulty was tuned against the target model until pass rates sat in the 20 to 50% band, so each task carried signal: hard enough to fail sometimes, fair enough to be passable from the materials given.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>target pass band</span><span>20–50%</span></div>
+              <div><span>domains</span><span>4</span></div>
+              <div><span>scoring</span><span>automatic</span></div>
+            </div>
+            <div class="verdict">A task that nobody fails measures nothing; one nobody passes measures the same.</div>
+          </aside>
+        </div>
+      </details>
+
+      <details class="case" id="case-agentic">
+        <summary>
+          <div>
+            <h3>Fleet operations platform: 24 desktop-application instances run from a phone</h3>
+            <p class="sum">A year-long engagement for a client who operates many instances of a third-party desktop application. I built the control plane: hardware-level input, pixel-level state reading, a Discord-based operator console, a health loop that repairs its own failures, and an evidence harness that proves every feature on video.</p>
+            <div class="tags"><span class="tag ship">in production</span><span class="tag">agentic systems</span><span class="tag">computer use</span><span class="tag">human in the loop</span><span class="tag">reliability</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The problem</h4>
+            <p>The client needed to run and supervise up to 24 instances of an application that was never designed to be automated, from a phone, with no engineer on call. The application takes input only from real hardware and exposes its state only on screen. Every part of the stack had to be observable and recoverable without a terminal.</p>
+            <h4>Architecture</h4>
+            <ul>
+              <li><b>Input as hardware.</b> Six microcontrollers present 24 USB keyboards and 24 mice. Each instance owns one keyboard and one mouse, bound by serial number, so no two instances can ever cross-talk.</li>
+              <li><b>Isolation per instance.</b> Each instance has its own virtual display, process tree, runtime prefix and network route. An instance without an assigned route is blocked at the socket layer rather than allowed to fall back.</li>
+              <li><b>State from pixels.</b> Screen classification (login, character select, in world, popup, captcha) by validated pixel tests, with OCR only where text is the signal. Every reply to the operator says where the instance is and what to press next.</li>
+              <li><b>Operator console on Discord.</b> One channel per instance with a persistent button panel; dashboards for capacity, finances, schedule and health, edited in place; history in threads; bilingual (English and Polish) from a single dictionary. Destructive actions confirm first; long actions report immediately and again when done.</li>
+            </ul>
+            <h4>Self-repair and evidence</h4>
+            <ul>
+              <li>A health loop walks each instance's dependency chain (board, display, input binding, controller, window) every 90 seconds, repairs what a reboot breaks, detects a failing microcontroller by its event stream and migrates the instance to a spare board, and applies upstream application updates by reading the vendor's own patch manifest.</li>
+              <li>An end-to-end harness exercises 13 features on a live instance, records a video and a per-step pass/fail table, and posts them as evidence. Its first two runs each caught a real production fault (a vendor update and an unsolved verification prompt) that the status system had reported as healthy.</li>
+              <li>A one-script rebuild of the whole stack on a fresh Windows machine, including firmware for new microcontrollers, with an offline kit that needs no downloads beyond standard tooling.</li>
+            </ul>
+            <h4>Human in the loop, by design</h4>
+            <p>The application occasionally asks a person to prove they are one. The system detects that prompt, refuses to start automated work under it, and opens a magnified remote view so the operator can respond by hand through the same hardware path. It never answers on a person's behalf. The same principle runs through the console: anything with a cost to reverse asks before it acts.</p>
+            <h4>Reliability work from the production audit</h4>
+            <ul>
+              <li>Replaced subprocess timeouts that never fire on Windows (only the shell dies; the child keeps the pipe) with process-tree kills, so a hung subsystem can no longer freeze the operator console.</li>
+              <li>Atomic config writes with a backup; a corrupt config refuses to start instead of silently running on defaults and overwriting the real one.</li>
+              <li>Per-instance command locks with a plain "busy with X" reply, fail-closed authorisation, central masking of credentials in every message, and deploys that roll back automatically if the service does not report healthy within 75 seconds.</li>
+              <li>Two independent review passes (one on wording and flow as a non-technical operator would experience it, one on failure modes); 45 UX findings and 9 critical robustness findings, all closed.</li>
+            </ul>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>instances per machine</span><span>24</span></div>
+              <div><span>hardware input devices</span><span>24 kbd + 24 mice</span></div>
+              <div><span>health pass interval</span><span>90 s</span></div>
+              <div><span>operator buttons, confirmed first</span><span>20 · 6</span></div>
+              <div><span>evidence per test run</span><span>video + 13 steps</span></div>
+              <div><span>rebuild on a fresh PC</span><span>1 script</span></div>
+              <div><span>languages</span><span>EN · PL</span></div>
+            </div>
+            <div class="verdict">Every claim the system makes about itself is backed by a frame, a log line or a verified state. Where a person is required, a person acts.</div>
+          </aside>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<section class="block" id="method">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Method</p><h2 style="margin-top:8px">How a task earns the right to ship</h2></div>
+      <p>The order matters. Difficulty is measured, never asserted, and the measurement is taken against the strongest attacker available, before anyone spends time on polish.</p>
+    </div>
+    <div class="steps">
+      <div><div class="k">1 · anchor</div><h4>Oracle at exactly 1.0</h4><p>A legal policy under the task's own rules, scored by the same grader the agents face. Not a number typed into a config.</p></div>
+      <div><div class="k">2 · fair reference</div><h4>Same information, 0.5</h4><p>Built from the oracle's own code with one capability removed. If the reference needs privileged knowledge, the task is unfair, not hard.</p></div>
+      <div><div class="k">3 · honesty gate</div><h4>Naive policies at 0.0</h4><p>Random, do-nothing, greedy, max-effort. Any of them scoring above the floor means the scorer rewards something other than the skill.</p></div>
+      <div><div class="k">4 · attack</div><h4>Strongest agent, public materials only</h4><p>The agent's policy becomes a permanent regression test. The raw gap between it and the oracle is the task's real difficulty.</p></div>
+      <div><div class="k">5 · record</div><h4>Post-mortem either way</h4><p>Held or cracked, the mechanism gets written down with numbers, so the next task starts from evidence rather than intuition.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="notes">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Field notes</p><h2 style="margin-top:8px">What the measurements keep saying</h2></div>
+      <p>Conclusions I would not have believed without running the experiment. Each one cost at least one task.</p>
+    </div>
+    <div class="notes">
+      <article class="note"><h4>Implementation complexity is not difficulty</h4><p>A task designed to need a 15-state estimator, impulse detection and delay compensation was solved at 0.711. A strong agent writes the whole stack correctly when the structure is visible.</p><div class="ev">evidence: three-mass proxy, agent 0.711 vs ceiling 0.5</div></article>
+      <article class="note"><h4>Publishing a proxy for a hidden variable kills the task</h4><p>Making a hidden quantity observable, even indirectly, hands the agent the one thing the reference did not have. Hidden parameters only matter if knowing them changes the optimal policy.</p><div class="ev">evidence: sailing and slung-load salvage sweeps, both empty bands</div></article>
+      <article class="note"><h4>Feedback erases planning on balanced systems</h4><p>On an actively stabilised inverted plant, trajectory history is overwritten every step. Difficulty from planning cannot exist there; only controller quality remains, and that is perishable.</p><div class="ev">evidence: balanced-stick, oracle only 4% above agent</div></article>
+      <article class="note"><h4>Shared information means shared pain</h4><p>A disturbance added to rescue a task hurts the weaker controller more. If reference and agent see the same inputs, there is often no disturbance level where 1.0 / 0.5 / under-0.4 coexist.</p><div class="ev">evidence: gust escalation, agent 0.34 at reference 0.18</div></article>
+      <article class="note"><h4>The only fundamental lever is unrecoverable information</h4><p>Delay and partial observability carry a provable optimality gap. Everything else measured so far, including contact hybridity, was solved hierarchically by a strong agent.</p><div class="ev">evidence: 2026 literature scan filtered through measured results</div></article>
+      <article class="note"><h4>A bare zero from an attacker is not a hold</h4><p>An agent that hit its turn limit and never submitted also scores 0.000. The trustworthy signal is a low but non-zero final score with a readable reason.</p><div class="ev">evidence: 108 attack runs read for trajectory, not final number</div></article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="systems">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Systems</p><h2 style="margin-top:8px">Production software</h2></div>
+      <p>Backend and product work that pays for the research habit. Five years of Python on AWS and in distributed architectures.</p>
+    </div>
+    <div class="sys">
+      <article><h3>AI SecureWatch, CyberSafe</h3><p>Lead backend engineer on an AI security platform: ML anomaly detection, tamper-evident logging with blockchain verification, and automated response. Python and Node.js on AWS. Worked with the founders on roadmap and technical hiring.</p><div class="row"><span class="tag">Python</span><span class="tag">Node.js</span><span class="tag">AWS</span><span class="tag">ML</span></div></article>
+      <article><h3>repo-testify</h3><p>Technical due diligence that executes a repository's own README claims instead of reading them: extracts claims, runs them in a sandbox, and produces a per-claim verdict ledger with explicit abstention. Built for a 75-hour agentic-workflows hackathon with an honest baseline and ablations.</p><div class="row"><span class="tag">Python</span><span class="tag">agents</span><span class="tag">evaluation</span></div><p class="lnk"><a href="https://github.com/Nathanjr123/repo-testify">github.com/Nathanjr123/repo-testify</a></p></article>
+      <article><h3>McIntyre MedSys</h3><p>Clinical communication and patient-safety platform for nursing teams: structured handover, escalation ladder, dual-sign telephone orders with a tamper-evident audit trail. Zero-dependency web app, shipped as a clickable MVP.</p><div class="row"><span class="tag">JavaScript</span><span class="tag">health tech</span><span class="tag">POPIA-aware</span></div><p class="lnk"><a href="https://nathanjr123.github.io/mcintyre-medsys/">Live MVP</a> · <a href="https://github.com/Nathanjr123/mcintyre-medsys">Source</a></p></article>
+      <article><h3>RisCura asset-management platform</h3><p>Backend services and SQL Server query optimisation for an internal platform used daily by the investment team. Microservices and R Shiny front ends in production.</p><div class="row"><span class="tag">SQL Server</span><span class="tag">microservices</span><span class="tag">R Shiny</span></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="about">
+  <div class="wrap about">
+    <div class="prose">
+      <p class="eyebrow">About</p>
+      <h2 style="margin-top:8px">Nathan Chukwudi Obiekwe</h2>
+      <p style="margin-top:18px">I trained in applied mathematics and computer science at Rhodes University and have worked as a backend engineer and independent consultant since 2019. Since late 2025 most of my time has gone into evaluation work for frontier labs: designing tasks, writing graders, and finding out, with numbers, where a model's ability actually ends.</p>
+      <p>I like work where the output can be checked. A task with a deterministic grader, an oracle that must hit 1.0, and an attacker's score on record is honest in a way a slide is not. I keep post-mortems of everything that failed because the failures are where the method came from.</p>
+      <p>I work remotely from Johannesburg, as a contractor or through an employer of record, and overlap comfortably with US East and European hours.</p>
+      <div class="timeline">
+        <div><span class="when">Jan 2026 – now</span><span>RL environments and coding evaluations for frontier-model training, via Alignerr</span></div>
+        <div><span class="when">Sep – Nov 2025</span><span>LLM evaluation and verification tasks, Turing</span></div>
+        <div><span class="when">Oct 2024 – now</span><span>Backend and security consultant, CyberSafe (AI SecureWatch)</span></div>
+        <div><span class="when">2024</span><span>Solidity developer, Linum Labs</span></div>
+        <div><span class="when">2022</span><span>Software developer, RisCura</span></div>
+        <div><span class="when">2019 – now</span><span>Independent software consultant</span></div>
+        <div><span class="when">2021</span><span>BSc Applied Mathematics and Computer Science, Rhodes University</span></div>
+      </div>
+    </div>
+    <aside id="contact">
+      <div class="contact">
+        <p class="eyebrow" style="margin-bottom:8px">Contact</p>
+        <div class="row"><span class="lab">email</span><span class="val" id="em">nathanphysicz@gmail.com</span><button class="copy" data-copy="em" type="button">Copy</button></div>
+        <div class="row"><span class="lab">linkedin</span><span class="val"><a href="https://www.linkedin.com/in/chukwudi-o-85b450184">linkedin.com/in/chukwudi-o-85b450184</a></span><span></span></div>
+        <div class="row"><span class="lab">github</span><span class="val"><a href="https://github.com/Nathanjr123">github.com/Nathanjr123</a></span><span></span></div>
+        <div class="row"><span class="lab">phone</span><span class="val" id="ph">+27 82 223 0202</span><button class="copy" data-copy="ph" type="button">Copy</button></div>
+        <div class="row"><span class="lab">hours</span><span class="val">UTC+2 · US East and EU overlap</span><span></span></div>
+        <p style="font-size:14px;color:var(--ink-2);margin-top:14px">A full CV and references are available on request. Task internals built for lab clients are shared only with the client's consent.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>Nathan Obiekwe · Johannesburg</span><span>Numbers on this page are from recorded harness runs and client review, not estimates.</span></div></footer>
+
+<script>
+(function(){
+  // deep links: #case-xxx opens that case study and scrolls to it
+  function openHash(){
+    var h=location.hash.replace('#','');
+    if(!h)return;
+    var el=document.getElementById(h);
+    if(el&&el.tagName==='DETAILS'){el.open=true;setTimeout(function(){el.scrollIntoView({block:'start'});},30);}
+  }
+  window.addEventListener('hashchange',openHash);openHash();
+  // copy buttons with fallback to selecting the text
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=document.getElementById(b.getAttribute('data-copy'));var s=t.textContent.trim();
+      var done=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy';},1400);};
+      var sel=function(){var r=document.createRange();r.selectNodeContents(t);var S=window.getSelection();S.removeAllRanges();S.addRange(r);};
+      try{navigator.clipboard.writeText(s).then(done,sel);}catch(e){sel();}
+    });
+  });
+  // current-section highlight in the nav
+  var links=[].slice.call(document.querySelectorAll('.links a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.removeAttribute('aria-current');});var i=secs.indexOf(e.target);if(i>-1)links[i].setAttribute('aria-current','true');}});},{rootMargin:'-40% 0px -55% 0px'});
+    secs.forEach(function(s){if(s)io.observe(s);});
+  }
+})();
+</script>
+
+</body>
+</html>
