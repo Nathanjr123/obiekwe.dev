@@ -552,6 +552,50 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
         </div>
       </details>
 
+      <details class="case" id="case-testify">
+        <summary>
+          <div>
+            <h3>repo-testify: make the repository testify</h3>
+            <p class="sum">Technical due diligence that runs a repository's own README claims in a clean sandbox and returns a verdict per claim, with the evidence attached. Anything the sandbox cannot settle goes to a person instead of being guessed. Built solo for the micro1 Agentic Workflows Hackathon, August 2026.</p>
+            <div class="tags"><span class="tag ship">open source</span><span class="tag">evaluation</span><span class="tag">agents</span><span class="tag">quality control</span></div>
+          </div>
+          <span class="open-ind"><span class="c">Open case ↓</span><span class="o">Close ↑</span></span>
+        </summary>
+        <div class="body">
+          <div>
+            <h4>The problem</h4>
+            <p>A README is a list of promises: install this way, run this snippet, supports these versions, this fast. Buyers, reviewers and AI-data teams read those promises and trust them, especially when the CI badge is green. Nobody executes them. The same failure shows up in every data program: the automated checks pass, the dashboard is green, and the delivered work is still wrong.</p>
+            <h4>Method</h4>
+            <ul>
+              <li><b>Claims, not opinions.</b> Each README promise becomes a separate claim with its own probe, so a repository gets a verdict per claim rather than one pass or fail.</li>
+              <li><b>Execution the model cannot argue with.</b> Every probe runs in a clean container and records its output. The adjudicator must cite that evidence, and a fixed verdict line from the probe overrides a model that disagrees with it.</li>
+              <li><b>Honest abstention.</b> When the sandbox cannot settle a claim, the tool says so and escalates. "I couldn't check" is never reported as "fine".</li>
+              <li><b>Measured against a fair baseline.</b> A one-call reading baseline, a single-agent execution arm and ablations separate what execution adds from what the pipeline's structure adds.</li>
+            </ul>
+            <h4>What it found</h4>
+            <ul>
+              <li>On the public split, every repository whose own test and CI claims fully verified still had at least one refuted README claim. humanize's doctest promises <code>'16 minutes'</code> and returns <code>'17 minutes'</code>. tabulate documents an install switch that does nothing and a benchmark table that contradicts its own prose.</li>
+              <li>Pointed at itself, it refuted a commit hash that no longer existed after a history rewrite, and on a second run a test count that was off by one. It was right both times.</li>
+              <li>Execution does most of the work: every arm that runs code is far above reading, and removing execution collapses the score to the reading baseline. The per-claim structure adds a smaller, repository-dependent gain on top.</li>
+            </ul>
+            <h4>Limits, stated in the repository</h4>
+            <p>The main failure mode is a sandbox that helps too much: installing a dependency the README never mentions, then verifying claims that fail as written. The fix is a rule, not a bigger model: probes may only use documented steps, and a documented prerequisite that fails refutes everything downstream. Samples are small (7 public, 6 extension and 7 held-out repositories) and verdicts are Linux only.</p>
+          </div>
+          <aside class="aside">
+            <div class="kv">
+              <div><span>per-claim accuracy, public split</span><span>0.13 → 0.84</span></div>
+              <div><span>same, 13 repos / 143 claims</span><span>0.15 → 0.87</span></div>
+              <div><span>vs a timed human, same 2 repos</span><span>0.91 vs 0.82</span></div>
+              <div><span>human attention per repo</span><span>5 min → 0</span></div>
+              <div><span>cost per repo</span><span>4 calls · ~$3.50</span></div>
+              <div><span>reproduce from a fresh clone</span><span>1 command</span></div>
+            </div>
+            <div class="verdict">Trust the evidence, not the claim. Where the evidence runs out, say so and hand it to a person.</div>
+            <p class="lnk"><a href="https://github.com/Nathanjr123/repo-testify">github.com/Nathanjr123/repo-testify</a></p>
+          </aside>
+        </div>
+      </details>
+
     </div>
   </div>
 </section>
@@ -597,7 +641,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
     </div>
     <div class="sys">
       <article><h3>AI Securewatch</h3><p>The startup I co-founded. Payment-graph fraud detection, now PayReality decision intelligence. Full account in the case study above.</p><div class="row"><span class="tag">co-founder</span><span class="tag">Python</span><span class="tag">AWS</span></div><p class="lnk"><a href="#case-securewatch">Read the case study</a></p></article>
-      <article><h3>repo-testify</h3><p>Technical due diligence that executes a repository's own README claims instead of reading them: extracts claims, runs them in a sandbox, and produces a per-claim verdict ledger with explicit abstention. Built for a 75-hour agentic-workflows hackathon with an honest baseline and ablations.</p><div class="row"><span class="tag">Python</span><span class="tag">agents</span><span class="tag">evaluation</span></div><p class="lnk"><a href="https://github.com/Nathanjr123/repo-testify">github.com/Nathanjr123/repo-testify</a></p></article>
+      <article><h3>repo-testify</h3><p>Technical due diligence that executes a repository's own README claims instead of reading them: extracts claims, runs them in a sandbox, and produces a per-claim verdict ledger with explicit abstention. Built for a 75-hour agentic-workflows hackathon with an honest baseline and ablations.</p><div class="row"><span class="tag">Python</span><span class="tag">agents</span><span class="tag">evaluation</span></div><p class="lnk"><a href="#case-testify">Read the case study</a> · <a href="https://github.com/Nathanjr123/repo-testify">Source</a></p></article>
       <article><h3>McIntyre MedSys</h3><p>Clinical communication and patient-safety platform for nursing teams: structured handover, escalation ladder, dual-sign telephone orders with a tamper-evident audit trail. Zero-dependency web app, shipped as a clickable MVP.</p><div class="row"><span class="tag">JavaScript</span><span class="tag">health tech</span><span class="tag">POPIA-aware</span></div><p class="lnk"><a href="https://nathanjr123.github.io/mcintyre-medsys/">Live MVP</a> · <a href="https://github.com/Nathanjr123/mcintyre-medsys">Source</a></p></article>
       <article><h3>RisCura asset-management platform</h3><p>Backend services and SQL Server query optimisation for an internal platform used daily by the investment team. Microservices and R Shiny front ends in production.</p><div class="row"><span class="tag">SQL Server</span><span class="tag">microservices</span><span class="tag">R Shiny</span></div></article>
     </div>
